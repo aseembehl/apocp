@@ -22,25 +22,17 @@ typedef struct imgScore{
     //int img_h;
 } IMG_SCORE;
 
-typedef struct bbox {
-	int min_x;
-	int min_y;
-	int width;
-	int height;
-} BBOX;
 
 typedef struct sub_pattern {
   /*
     Type definition for input pattern x
   */
   char file_name[1000];
-  int *id_map;
-  BBOX *boxes;
-  int *bbox_labels;
+  int *areaRatios;
   SVECTOR **phis;
   int n_candidates;
   int label;
-  int supervised_positive;
+  int isConsider;
   
 } SUB_PATTERN;
 
@@ -54,8 +46,7 @@ typedef struct pattern {
     long n_pos;
     long n_neg;
     long n_neg_boxes;
-     long n_unsup_neg;
-     SVECTOR **negExPool;
+    long n_unsup_neg;
 } PATTERN;
 
 typedef struct label {
@@ -80,6 +71,7 @@ typedef struct latent_var {
     Type definition for latent variable h
   */
   int *h_is;
+  SVECTOR **phi_h_is;
 } LATENT_VAR;
 
 typedef struct example {

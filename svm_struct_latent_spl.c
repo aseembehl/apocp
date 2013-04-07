@@ -121,7 +121,7 @@ double current_obj_val(EXAMPLE *ex, long m, STRUCTMODEL *sm, STRUCT_LEARN_PARM *
     
     // added by aseem
     //free_label(ybar);
-    //free_latent_var(hbar);
+    free_latent_var(hbar, ex[i].x);
 
     /* scale difference vector */
     for (f=fy;f;f=f->next) {
@@ -209,7 +209,7 @@ SVECTOR* find_cutting_plane(EXAMPLE *ex, double *margin, long m, STRUCTMODEL *sm
     fybar = psi(ex[i].x,ybar,hbar,sm,sparm);
     lossval = loss(ex[i].y,ybar,hbar,sparm);
     free_label(ybar);
-    free_latent_var(hbar);
+    free_latent_var(hbar, ex[i].x);
 		
     /* scale difference vector */
     for (f=fy;f;f=f->next) {
@@ -497,7 +497,7 @@ int update_valid_examples(double *w, long m, double C, EXAMPLE *ex, STRUCTMODEL 
 		
 		// added by aseem
 		//free_label(ybar);
-        //free_latent_var(hbar);
+        //free_latent_var(hbar, ex[i].x);
 		
 		for (f=fy;f;f=f->next) {
 			j = 0;

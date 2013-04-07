@@ -33,7 +33,7 @@ STRUCTMODEL read_struct_model(char *file, STRUCT_LEARN_PARM *sparm);
 void free_struct_model(STRUCTMODEL sm, STRUCT_LEARN_PARM *sparm);
 void free_pattern(PATTERN x);
 void free_label(LABEL y);
-void free_latent_var(LATENT_VAR h);
+void free_latent_var(LATENT_VAR h, PATTERN x);
 void free_struct_sample(SAMPLE s);
 void parse_struct_parameters(STRUCT_LEARN_PARM *sparm);
 
