@@ -682,6 +682,40 @@ SAMPLE  generate_validation_set(SAMPLE alldata, long *perm, int ntrain)
 }*/
 
 
+double negative_mine_loop(double *w, long m, int MAX_ITER, double C, double epsilon, EXAMPLE *ex, 
+                               STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm, int *valid_examples, double spl_weight) 
+                               {
+    double decrement;
+  	double primal_obj, last_primal_obj;
+  	double stop_crit; 
+
+  	int iter = 0;
+  	last_primal_obj = DBL_MAX;
+  	decrement = 0;
+
+    while ((iter<2)||(!stop_crit)) { 
+    	printf("NEG MINE ITER %d\n", iter); fflush(stdout);
+
+    	mine_negative_latent_variables(ex[0].x, &ex[0].h, sm);
+		
+		primal_obj = alternate_convex_search(w, m, MAX_ITER, C, epsilon, ex, sm, sparm, valid_examples, spl_weight);
+
+		decrement = last_primal_obj - primal_obj;
+	    last_primal_obj = primal_obj;
+	    printf("neg mine primal objective: %.4f\n", primal_obj);
+		if (iter) {
+    		printf(" neg mine decrement: %.4f\n", decrement); fflush(stdout);
+		}
+		else {
+			printf("neg mine decrement: N/A\n"); fflush(stdout);
+		}
+    
+    	stop_crit = (decrement<C*epsilon);		
+		iter++;
+	}	
+	return(primal_obj); 
+}		
+
 int main(int argc, char* argv[]) {
 
   double *w; /* weight vector */
@@ -824,12 +858,13 @@ int main(int argc, char* argv[]) {
 	int latent_update = 0;
 	spl_weight = init_spl_weight;
   while ((outer_iter<2)||((!stop_crit)&&(outer_iter<MAX_OUTER_ITER))) { 
-    printf("OUTER ITER %d\n", outer_iter); 
+    printf("OUTER ITER %d\n", outer_iter); fflush(stdout);
     // cutting plane algorithm
     //primal_obj = cutting_plane_algorithm(w, m, MAX_ITER, C, epsilon, fycache, ex, &sm, &sparm, valid_examples);
 		//primal_obj = cutting_plane_algorithm(w, m, MAX_ITER, C, epsilon, ex, &sm, &sparm, valid_examples);
 		// solve biconvex self-paced learning problem
-		primal_obj = alternate_convex_search(w, m, MAX_ITER, C, epsilon, ex, &sm, &sparm, valid_examples, spl_weight);
+    	
+		primal_obj = negative_mine_loop(w, m, MAX_ITER, C, epsilon, ex, &sm, &sparm, valid_examples, spl_weight);
 		int nValid = 0;
 		for (i=0;i<m;i++) {
 			if(valid_examples[i]) {
@@ -837,59 +872,38 @@ int main(int argc, char* argv[]) {
 			}
 		}
     
-    // compute decrement in objective in this outer iteration 
-    decrement = last_primal_obj - primal_obj;
-    last_primal_obj = primal_obj;
-    printf("primal objective: %.4f\n", primal_obj);
+	    // compute decrement in objective in this outer iteration 
+	    decrement = last_primal_obj - primal_obj;
+	    last_primal_obj = primal_obj;
+	    printf("primal objective: %.4f\n", primal_obj);
 		if (outer_iter) {
-    	printf("decrement: %.4f\n", decrement); fflush(stdout);
+    		printf("decrement: %.4f\n", decrement); fflush(stdout);
 		}
 		else {
 			printf("decrement: N/A\n"); fflush(stdout);
 		}
     
-    stop_crit = (decrement<C*epsilon);
+    	stop_crit = (decrement<C*epsilon);
 		// additional stopping criteria 
 		if(nValid < m)
 			stop_crit = 0;
 		if(!latent_update)
 			stop_crit = 0;
   
-    // impute latent variable using updated weight vector
+    	// impute latent variable using updated weight vector
 		if(nValid) {
-    	for (i=0;i<m;i++) {
-      	//free_latent_var(ex[i].h);
-      	//ex[i].h = infer_latent_variables(ex[i].x, ex[i].y, &sm, &sparm);
-      	infer_latent_variables(ex[i].x, ex[i].y, &ex[i].h, &sm, &sparm);
-        
-    	}
+	    	for (i=0;i<m;i++) {
+	    		if(!stop_crit){
+	    			infer_latent_variables(ex[i].x, ex[i].y, &ex[i].h, &sm, &sparm);
+	    		}
+	    	}
 			latent_update++;
 		}
 
-    /* re-compute feature vector cache */
-    /*for (i=0;i<m;i++) {
-      free_svector(fycache[i]);
-      fy = psi(ex[i].x, ex[i].y, ex[i].h, &sm, &sparm);
-      diff = add_list_ss(fy);
-      free_svector(fy);
-      fy = diff;
-      fycache[i] = fy;
-    }*/
 		sprintf(itermodelfile,"%s.%04d",modelfile,outer_iter);
 		write_struct_model(itermodelfile, &sm, &sparm);
 
-		/*aseem if(ntrain < alldata.n) {
-			cur_loss = compute_current_loss(val,&sm,&sparm);
-			if(cur_loss <= best_loss) {
-				best_loss = cur_loss;
-				loss_iter = outer_iter;
-			}
-			printf("CURRENT LOSS: %f\n",cur_loss);
-			printf("BEST LOSS: %f\n",best_loss);
-			printf("LOSS ITER: %d\n",loss_iter);
-		}*/
-
-    outer_iter++;  
+    	outer_iter++;  
 		spl_weight /= spl_factor;
   } // end outer loop*/
   

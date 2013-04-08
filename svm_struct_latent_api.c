@@ -215,6 +215,9 @@ void init_latent_variables(SAMPLE *sample, LEARN_PARM *lparm, STRUCTMODEL *sm, S
                 free_svector(fvecs[j]);
             }
             free(fvecs);
+            if(i % 15 == 0){
+                printf("%ld Postive image\n", i); fflush(stdout);
+            }
         }
         else{
             sample->examples[0].h.h_is[i] = -1; // There is no latent variable for negative samples.
@@ -443,6 +446,43 @@ void findOptimumNegLocations(PATTERN x, LABEL *ybar, IMG_SCORE *positiveImgScore
     free(optimumLocNegImg);
 }
 
+void mine_negative_latent_variables(PATTERN x, LATENT_VAR *h, STRUCTMODEL *sm) {
+    int i, j;    
+
+    int n_neg = 0;
+    
+    double maxScore = -DBL_MAX;
+    double score;
+
+    SVECTOR **fvecs = NULL;
+    
+    for(i = 0; i < (x.n_pos+x.n_neg); i++){
+        maxScore = -DBL_MAX;
+        if(x.x_is[i].label == 0){
+            if (h->phi_h_is[i]){
+                free_svector(h->phi_h_is[i]);
+            }
+            fvecs = readFeatures(x.x_is[i].file_name, x.x_is[i].n_candidates);
+            for(j = 0; j < x.x_is[i].n_candidates; j++){
+                score = sprod_ns(sm->w, fvecs[j]);      
+                if(score > maxScore){
+                    maxScore = score;
+                    h->h_is[i] = j;
+                }   
+            }
+            h->phi_h_is[i] = copy_svector(fvecs[h->h_is[i]]);
+            for(j =0; j < x.x_is[i].n_candidates; j++){
+                free_svector(fvecs[j]);
+            }
+            free(fvecs);
+            if(n_neg % 500 == 0){
+                printf("%d Negative image\n", n_neg); fflush(stdout);
+            }
+            n_neg++;
+        }
+    }
+}
+
 void find_most_violated_constraint_marginrescaling(PATTERN *x, LABEL y, LATENT_VAR *h, LABEL *ybar, LATENT_VAR *hbar, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm) {
 /*
   Finds the most violated constraint (loss-augmented inference), i.e.,
@@ -450,12 +490,11 @@ void find_most_violated_constraint_marginrescaling(PATTERN *x, LABEL y, LATENT_V
   The output (ybar,hbar) are stored at location pointed by 
   pointers *ybar and *hbar. 
 */
-    int i, j;    
+    int i;    
     
-    double maxScore = -DBL_MAX;
     double score;
 
-    SVECTOR **fvecs = NULL;
+    /*SVECTOR **fvecs = NULL;
     
     for(i = 0; i < (x->n_pos+x->n_neg); i++){
         maxScore = -DBL_MAX;
@@ -477,7 +516,7 @@ void find_most_violated_constraint_marginrescaling(PATTERN *x, LABEL y, LATENT_V
             }
             free(fvecs);
         }
-    }
+    }*/
 
     hbar->h_is = malloc((x->n_pos+x->n_neg)*sizeof(int));
     if(!hbar->h_is) die("Memory error");

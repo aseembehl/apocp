@@ -40,4 +40,6 @@ void parse_struct_parameters(STRUCT_LEARN_PARM *sparm);
 void print_latent_var(LATENT_VAR h, FILE *flatent);
 void print_label(LABEL l, FILE *flabel);
 
+void mine_negative_latent_variables(PATTERN x, LATENT_VAR *h, STRUCTMODEL *sm);
+
 
