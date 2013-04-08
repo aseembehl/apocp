@@ -96,6 +96,7 @@ SVECTOR** readFeatures(char *feature_file, int n_fvecs) {
         words = NULL;
         i++;
    }
+   fclose(fp);
    return fvecs;
 }
 
