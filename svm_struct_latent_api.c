@@ -307,7 +307,7 @@ SVECTOR *psi(PATTERN x, LABEL y, LATENT_VAR h, STRUCTMODEL *sm, STRUCT_LEARN_PAR
     return(fvec);
 }
 
-double *classify_struct_example(PATTERN x, STRUCTMODEL *sm) {
+double *classify_struct_example(PATTERN x, LATENT_VAR h, STRUCTMODEL *sm) {
 /*
   Makes prediction with input pattern x with weight vector in sm->w,
   i.e., computing argmax_{(y,h)} <w,psi(x,y,h)>. 
@@ -318,7 +318,7 @@ double *classify_struct_example(PATTERN x, STRUCTMODEL *sm) {
     double *scores = (double *) malloc((x.n_pos+x.n_neg)*sizeof(double));
     
     for(i = 0; i < (x.n_neg+x.n_pos); i++){
-        scores[i] = sprod_ns(sm->w, x.x_is[i].phis[0]); // There isn't any latent var for test images, so we use 0 index        
+        scores[i] = sprod_ns(sm->w, h.phi_h_is[i]);      
     }
 
 	return scores;
@@ -620,6 +620,52 @@ void infer_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, 
             if(i % 15 == 0){
                 printf("%ld Postive image\n", i); fflush(stdout);
             }
+        }
+    }
+
+    //return(h); 
+
+}
+
+void infer_test_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm) {
+/*
+  Complete the latent variable h for labeled examples, i.e.,
+  computing argmax_{h} <w,psi(x,y,h)>. 
+*/
+
+  //LATENT_VAR h;
+  
+      /* your code here */
+    long i;
+    int j;
+    
+   
+    //h->h_is = (int *) malloc((x.n_pos+x.n_neg)*sizeof(int));
+    double maxScore = -DBL_MAX;
+    double curr_score;
+    
+    SVECTOR **fvecs = NULL;
+
+    for(i = 0; i < (x.n_pos+x.n_neg); i++){
+        maxScore = -DBL_MAX;
+        free_svector(h->phi_h_is[i]);
+        fvecs = readFeatures(x.x_is[i].file_name, x.x_is[i].n_candidates);
+        for(j = 0; j < x.x_is[i].n_candidates; j++){
+            //if(s.x_is[i].isConsider){
+            curr_score = sprod_ns(sm->w, fvecs[j]);      
+            if(curr_score > maxScore){
+                maxScore = curr_score;
+                h->h_is[i] = j;
+            }   
+            //}                
+        }
+        h->phi_h_is[i] = copy_svector(fvecs[h->h_is[i]]);
+        for(j =0; j < x.x_is[i].n_candidates; j++){
+            free_svector(fvecs[j]);
+        }
+        free(fvecs);
+        if(i % 10 == 0){
+            printf("%ld Postive image\n", i); fflush(stdout);
         }
     }
 

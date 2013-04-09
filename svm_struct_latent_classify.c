@@ -52,7 +52,8 @@ int main(int argc, char* argv[]) {
 
   init_struct_model(testsample,&model,&sparm,&lparm,&kparm);
 
-  scores = classify_struct_example(testsample.examples[0].x,&model);
+  infer_test_latent_variables(testsample.examples[0].x, testsample.examples[0].y, &testsample.examples[0].h, &model, &sparm);
+  scores = classify_struct_example(testsample.examples[0].x, testsample.examples[0].h,&model);
   for(i = 0; i < (testsample.examples[0].n_pos+testsample.examples[0].n_neg); i++){
     fprintf(fscore, "%0.5f\n", scores[i]);
   }
@@ -73,7 +74,7 @@ void read_input_parameters(int argc, char **argv, char *testfile, char *modelfil
   
   /* set default */
   sparm->custom_argc = 0;
-  sparm->feature_size = 2405;
+  sparm->feature_size = 90112;
 
   for (i=1;(i<argc)&&((argv[i])[0]=='-');i++) {
     switch ((argv[i])[1]) {
