@@ -207,8 +207,9 @@ void init_latent_variables(SAMPLE *sample, LEARN_PARM *lparm, STRUCTMODEL *sm, S
     for(i=0; i < (sample->examples[0].n_pos+sample->examples[0].n_neg); i++){
         sample->examples[0].h.phi_h_is[i] = NULL;
         if(sample->examples[0].x.x_is[i].label == 1){
-            positive_candidate = (int) (((float)sample->examples[0].x.x_is[i].n_candidates)*((float)rand())/(RAND_MAX+1.0)); 
-            sample->examples[0].h.h_is[i] = positive_candidate; 
+            //positive_candidate = (int) (((float)sample->examples[0].x.x_is[i].n_candidates)*((float)rand())/(RAND_MAX+1.0)); 
+            //sample->examples[0].h.h_is[i] = positive_candidate; 
+            sample->examples[0].h.h_is[i] = 0;
             
             fvecs = readFeatures(sample->examples[0].x.x_is[i].file_name, sample->examples[0].x.x_is[i].n_candidates);
             sample->examples[0].h.phi_h_is[i] = copy_svector(fvecs[sample->examples[0].h.h_is[i]]);
@@ -616,6 +617,9 @@ void infer_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, 
                 free_svector(fvecs[j]);
             }
             free(fvecs);
+            if(i % 15 == 0){
+                printf("%ld Postive image\n", i); fflush(stdout);
+            }
         }
     }
 
