@@ -720,7 +720,6 @@ void infer_test_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL 
 
     for(i = 0; i < (x.n_pos+x.n_neg); i++){
         maxScore = -DBL_MAX;
-        free_svector(h->phi_h_is[i]);
         fvecs = readFeatures(x.x_is[i].file_name, x.x_is[i].n_candidates);
         for(j = 0; j < x.x_is[i].n_candidates; j++){
             //if(s.x_is[i].isConsider){
