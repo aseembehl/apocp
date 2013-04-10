@@ -26,7 +26,7 @@ SVECTOR *psi(PATTERN x, LABEL y, LATENT_VAR h, STRUCTMODEL *sm, STRUCT_LEARN_PAR
 double *classify_struct_example(PATTERN x, LATENT_VAR h, STRUCTMODEL *sm);
 void find_most_violated_constraint_marginrescaling(PATTERN *x, LABEL y, LATENT_VAR *h, LABEL *ybar, LATENT_VAR *hbar, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm);
 //LATENT_VAR infer_latent_variables(PATTERN x, LABEL y, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm);
-void infer_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm);
+void infer_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm, int outer_iter);
 double loss(LABEL y, LABEL ybar, LATENT_VAR hbar, STRUCT_LEARN_PARM *sparm);
 void write_struct_model(char *file, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm);
 STRUCTMODEL read_struct_model(char *file, STRUCT_LEARN_PARM *sparm);

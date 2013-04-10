@@ -32,8 +32,7 @@ typedef struct sub_pattern {
   SVECTOR **phis;
   int n_candidates;
   int label;
-  int isConsider;
-  
+    
 } SUB_PATTERN;
 
 typedef struct pattern {

@@ -270,18 +270,30 @@ void init_latent_variables(SAMPLE *sample, LEARN_PARM *lparm, STRUCTMODEL *sm, S
     sample->examples[0].h.phi_h_is = (SVECTOR **) malloc((sample->examples[0].n_pos+sample->examples[0].n_neg)*sizeof(SVECTOR *));
 
     long i;
-    int positive_candidate;
+    //int positive_candidate;
     SVECTOR **fvecs = NULL;
 
     int j;
+
+    int maxArea = 0;
+    int maxAreaIdx = 0;
 
     srand(sparm->rng_seed);
     for(i=0; i < (sample->examples[0].n_pos+sample->examples[0].n_neg); i++){
         sample->examples[0].h.phi_h_is[i] = NULL;
         if(sample->examples[0].x.x_is[i].label == 1){
+            maxArea = 0;
+            maxAreaIdx = 0;
             //positive_candidate = (int) (((float)sample->examples[0].x.x_is[i].n_candidates)*((float)rand())/(RAND_MAX+1.0)); 
             //sample->examples[0].h.h_is[i] = positive_candidate; 
-            sample->examples[0].h.h_is[i] = 0;
+            for (j = 0; j < sample->examples[0].x.x_is[i].n_candidates; j++)
+            {
+                if(sample->examples[0].x.x_is[i].areaRatios[j] > maxArea){
+                    maxArea = sample->examples[0].x.x_is[i].areaRatios[j];
+                    maxAreaIdx = j;
+                }
+            }
+            sample->examples[0].h.h_is[i] = maxAreaIdx;
             
             fvecs = readFeatures(sample->examples[0].x.x_is[i].file_name, sample->examples[0].x.x_is[i].n_candidates);
             sample->examples[0].h.phi_h_is[i] = copy_svector(fvecs[sample->examples[0].h.h_is[i]]);
@@ -651,7 +663,7 @@ void find_most_violated_constraint_marginrescaling(PATTERN *x, LABEL y, LATENT_V
     free(imgIndexMap);
 }
 
-void infer_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm) {
+void infer_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm, int outer_iter) {
 /*
   Complete the latent variable h for labeled examples, i.e.,
   computing argmax_{h} <w,psi(x,y,h)>. 
@@ -676,13 +688,13 @@ void infer_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, 
             free_svector(h->phi_h_is[i]);
             fvecs = readFeatures(x.x_is[i].file_name, x.x_is[i].n_candidates);
             for(j = 0; j < x.x_is[i].n_candidates; j++){
-                //if(s.x_is[i].isConsider){
-                curr_score = sprod_ns(sm->w, fvecs[j]);      
-                if(curr_score > maxScore){
-                    maxScore = curr_score;
-                    h->h_is[i] = j;
-                }   
-                //}                
+                if(x.x_is[i].areaRatios[j] > (70-10*outer_iter)){
+                    curr_score = sprod_ns(sm->w, fvecs[j]);      
+                    if(curr_score > maxScore){
+                        maxScore = curr_score;
+                        h->h_is[i] = j;
+                    }   
+                }                
             }
             h->phi_h_is[i] = copy_svector(fvecs[h->h_is[i]]);
             for(j =0; j < x.x_is[i].n_candidates; j++){
