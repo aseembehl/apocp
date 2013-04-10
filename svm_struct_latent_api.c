@@ -710,7 +710,9 @@ void infer_test_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL 
       /* your code here */
     long i;
     int j;
-    
+
+    h->h_is = (int *) malloc((x.n_pos+x.n_neg)*sizeof(int));
+    h->phi_h_is = (SVECTOR **) malloc((x.n_pos+x.n_neg)*sizeof(SVECTOR *));
    
     //h->h_is = (int *) malloc((x.n_pos+x.n_neg)*sizeof(int));
     double maxScore = -DBL_MAX;
