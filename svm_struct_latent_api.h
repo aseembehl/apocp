@@ -42,5 +42,6 @@ void print_label(LABEL l, FILE *flabel);
 
 void mine_negative_latent_variables(PATTERN x, LATENT_VAR *h, STRUCTMODEL *sm);
 void infer_test_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm);
+SAMPLE read_struct_test_examples(char *file, STRUCT_LEARN_PARM *sparm);
 
 

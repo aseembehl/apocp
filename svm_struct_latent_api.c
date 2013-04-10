@@ -177,6 +177,78 @@ SAMPLE read_struct_examples(char *file, STRUCT_LEARN_PARM *sparm) {
     return sample;
 }
 
+SAMPLE read_struct_test_examples(char *file, STRUCT_LEARN_PARM *sparm) {
+    SAMPLE sample;
+
+    int i , j; 
+    
+    // open the file containing candidate bounding box dimensions/labels/featurePath and image label
+    FILE *fp = fopen(file, "r");
+    if(fp==NULL){
+        printf("Error: Cannot open input file %s\n",file);
+        exit(1);      
+    }
+
+    // We treat all images as one example, since there is only one correct structural output Y* for all images combined
+    sample.n = 1;  
+    sample.examples = (EXAMPLE *) malloc(sample.n*sizeof(EXAMPLE));
+    if(!sample.examples) die("Memory error.");
+    sample.examples[0].n_pos = 0;
+    sample.examples[0].n_neg = 0;
+    
+    fscanf(fp,"%ld", &sample.examples[0].n_imgs);
+    
+    /* Initialise pattern */
+    sample.examples[0].x.example_cost = 1;
+    sample.examples[0].x.x_is = (SUB_PATTERN *) malloc(sample.examples[0].n_imgs*sizeof(SUB_PATTERN));
+    if(!sample.examples[0].x.x_is) die("Memory error.");
+    sample.examples[0].y.labels = (int *) malloc(sample.examples[0].n_imgs*sizeof(int));
+    if(!sample.examples[0].y.labels) die("Memory error.");
+    
+    for(i = 0; i < sample.examples[0].n_imgs; i++){
+        fscanf(fp, "%s", sample.examples[0].x.x_is[i].file_name);
+        fscanf(fp,"%d",&sample.examples[0].x.x_is[i].label);
+        fscanf(fp, "%d", &sample.examples[0].x.x_is[i].n_candidates);
+        
+        sample.examples[0].y.labels[i] = sample.examples[0].x.x_is[i].label;
+        // Image label can be 0(negative image) or 1(positive image)
+        if(sample.examples[0].x.x_is[i].label == 0) {
+            sample.examples[0].n_neg++;
+        } else { 
+            sample.examples[0].n_pos++; 
+        }
+
+        sample.examples[0].x.x_is[i].phis = (SVECTOR **) malloc(sample.examples[0].x.x_is[i].n_candidates*sizeof(SVECTOR *));
+        if(!sample.examples[0].x.x_is[i].phis) die("Memory error.");  
+    }
+     
+    sample.examples[0].x.n_pos = sample.examples[0].n_pos;
+    sample.examples[0].x.n_neg = sample.examples[0].n_neg;
+    sample.examples[0].y.n_pos = sample.examples[0].n_pos;
+    sample.examples[0].y.n_neg = sample.examples[0].n_neg;
+    
+    /* Intialise label*/
+    sample.examples[0].y.ranking = (int *) calloc((sample.examples[0].n_pos+sample.examples[0].n_neg), sizeof(int));
+    for(i = 0; i < (sample.examples[0].n_pos+sample.examples[0].n_neg); i++){
+        for(j = i+1; j < (sample.examples[0].n_pos+sample.examples[0].n_neg); j++){
+            if(sample.examples[0].x.x_is[i].label == 1){
+                if(sample.examples[0].x.x_is[j].label == 0){
+                    sample.examples[0].y.ranking[i]++;
+                    sample.examples[0].y.ranking[j]--;
+                }              
+            }
+            else{
+                if(sample.examples[0].x.x_is[j].label == 1){
+                    sample.examples[0].y.ranking[i]--;
+                    sample.examples[0].y.ranking[j]++;
+                }
+            }
+        }
+    }
+
+    return sample;
+}
+
 void init_struct_model(SAMPLE sample, STRUCTMODEL *sm, STRUCT_LEARN_PARM *sparm, LEARN_PARM *lparm, KERNEL_PARM *kparm) {
 /*
   Initialize parameters in STRUCTMODEL sm. Set the diminension 

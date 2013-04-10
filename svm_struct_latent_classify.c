@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 
   /* read test examples */
 	printf("Reading test examples..."); fflush(stdout);
-  testsample = read_struct_examples(testfile,&sparm);
+  testsample = read_struct_test_examples(testfile,&sparm);
 	printf("done.\n");
 
   init_struct_model(testsample,&model,&sparm,&lparm,&kparm);
