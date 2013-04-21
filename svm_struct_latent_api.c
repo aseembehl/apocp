@@ -54,7 +54,9 @@ SVECTOR** readFeatures(char *feature_file, int n_fvecs) {
     FILE *fp = fopen(feature_file, "r");
     
     int fvec_length = 0;
-    char line[1000000];
+    int fvec_buffer_length;
+    char *line = NULL;
+    size_t len = 0;
     size_t ln;
     char *pair, *single, *brkt, *brkb;
 
@@ -64,15 +66,21 @@ SVECTOR** readFeatures(char *feature_file, int n_fvecs) {
     int i = 0;
     int j = 0;
 
-    while( fgets(line,1000000,fp) ) {
+    while( getline(&line,&len,fp) != -1) {
         ln = strlen(line) - 1;
         if (line[ln] == '\n')
             line[ln] = '\0';
         
         fvec_length = 0;
+        fvec_buffer_length = 10000;
+        words = (WORD *) malloc(fvec_buffer_length*sizeof(WORD));
+       
         for(pair = strtok_r(line, " ", &brkt); pair; pair = strtok_r(NULL, " ", &brkt)){
             fvec_length++;
-            words = (WORD *) realloc(words, fvec_length*sizeof(WORD));
+            if(fvec_length == fvec_buffer_length){
+                fvec_buffer_length = fvec_buffer_length*1.5;
+                words = (WORD *) realloc(words, fvec_buffer_length*sizeof(WORD));
+            }            
             if(!words) die("Memory error.");
             j = 0;
             for (single = strtok_r(pair, ":", &brkb); single; single = strtok_r(NULL, ":", &brkb)){
@@ -84,10 +92,12 @@ SVECTOR** readFeatures(char *feature_file, int n_fvecs) {
                 }
                 j++;
             }
-        }   
+        } 
         fvec_length++; 
-        words = (WORD *) realloc(words, fvec_length*sizeof(WORD));
-        if(!words) die("Memory error.");
+        if(fvec_length == fvec_buffer_length){
+            words = (WORD *) realloc(words, fvec_length*sizeof(WORD));
+            if(!words) die("Memory error.");
+        }        
         words[fvec_length-1].wnum = 0;
         words[fvec_length-1].weight = 0.0;
 
@@ -95,6 +105,9 @@ SVECTOR** readFeatures(char *feature_file, int n_fvecs) {
         free(words);
         words = NULL;
         i++;
+
+        free(line);
+        line = NULL;
    }
    fclose(fp);
    return fvecs;
