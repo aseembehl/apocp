@@ -802,8 +802,11 @@ int main(int argc, char* argv[]) {
   init_latent_variables(&sample,&learn_parm,&sm,&sparm);
 
   // added by aseem. impute latent variable using updated weight vector
+  outer_iter = 0;
   if (sparm.isInitByBinSVM){
     //infer_latent_variables(ex[0].x, ex[0].y, &ex[0].h, &sm, &sparm);
+    infer_latent_variables(ex[0].x, ex[0].y, &ex[0].h, &sm, &sparm, sparm.initIter);
+    outer_iter = 1 + sparm.initIter;
   }
   
   // added by aseem 
@@ -844,7 +847,7 @@ int main(int argc, char* argv[]) {
 	}
      
   /* outer loop: latent variable imputation */
-  outer_iter = 0;
+  //aseem outer_iter = 0;
   last_primal_obj = DBL_MAX;
   decrement = 0;
 
@@ -1007,6 +1010,10 @@ void my_read_input_parameters(int argc, char *argv[], char *trainfile, char* mod
     }
     else{
       struct_parm->isInitByBinSVM = 0;
+    }
+
+    if(struct_parm->isInitByBinSVM){
+      struct_parm->initIter = atoi(argv[i+4]);
     }
 
 	/* self-paced learning weight should be non-negative */

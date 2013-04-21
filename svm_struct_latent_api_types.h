@@ -124,6 +124,8 @@ typedef struct struct_learn_parm {
   long feature_size;
   int rng_seed;
   int isInitByBinSVM;
+  int initIter;
+
   int learning_type;
   
 } STRUCT_LEARN_PARM;
