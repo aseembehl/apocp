@@ -127,6 +127,7 @@ typedef struct struct_learn_parm {
   int initIter;
 
   int learning_type;
+  int min_area_ratios[6];
   
 } STRUCT_LEARN_PARM;
 

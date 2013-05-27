@@ -319,9 +319,18 @@ double cutting_plane_algorithm(double *w, long m, int MAX_ITER, double C, double
 
   printf("Running structural SVM solver: "); fflush(stdout); 
 
+  	mine_negative_latent_variables(ex[0].x, &ex[0].h, sm);
 	new_constraint = find_cutting_plane(ex, &margin, m, sm, sparm, valid_examples);
  	value = margin - sprod_ns(w, new_constraint);
 	while((value>threshold+epsilon)&&(iter<MAX_ITER)) {
+		if(value <= (threshold+epsilon)){
+			mine_negative_latent_variables(ex[0].x, &ex[0].h, sm);
+			new_constraint = find_cutting_plane(ex, &margin, m, sm, sparm, valid_examples);
+			value = margin - sprod_ns(w, new_constraint);
+			if(value<=(threshold+epsilon)){
+	            break;
+	        }
+		}
 		iter+=1;
 		size_active+=1;
 
@@ -551,9 +560,9 @@ double alternate_convex_search(double *w, long m, int MAX_ITER, double C, double
 	for (i=0;i<sm->sizePsi+1;i++)
 		best_w[i] = w[i];
 	nValid = update_valid_examples(w, m, C, ex, sm, sparm, valid_examples, spl_weight);
-	last_relaxed_primal_obj = current_obj_val(ex, m, sm, sparm, C, valid_examples);
+	/*last_relaxed_primal_obj = current_obj_val(ex, m, sm, sparm, C, valid_examples);
 	if(nValid < m)
-		last_relaxed_primal_obj += (double)(m-nValid)/((double)spl_weight);
+		last_relaxed_primal_obj += (double)(m-nValid)/((double)spl_weight);*/
 
 	for (i=0;i<m;i++) {
 		prev_valid_examples[i] = 0;
@@ -568,7 +577,7 @@ double alternate_convex_search(double *w, long m, int MAX_ITER, double C, double
 		for (i=0;i<sm->sizePsi+1;i++)
 			w[i] = 0.0;
 		relaxed_primal_obj = cutting_plane_algorithm(w, m, MAX_ITER, C, epsilon, ex, sm, sparm, valid_examples);
-		if(nValid < m)
+		/*if(nValid < m)
 			relaxed_primal_obj += (double)(m-nValid)/((double)spl_weight);
 		decrement = last_relaxed_primal_obj-relaxed_primal_obj;
     printf("relaxed primal objective: %.4f\n", relaxed_primal_obj);
@@ -586,7 +595,10 @@ double alternate_convex_search(double *w, long m, int MAX_ITER, double C, double
 		if (decrement <= C*epsilon) {
 			break;
 		}
-		last_relaxed_primal_obj = relaxed_primal_obj;
+		last_relaxed_primal_obj = relaxed_primal_obj;*/
+		for (i=0;i<sm->sizePsi+1;i++) {
+			best_w[i] = w[i];
+		}
 		for (i=0;i<m;i++) {
 			prev_valid_examples[i] = valid_examples[i];
 		}
@@ -602,13 +614,13 @@ double alternate_convex_search(double *w, long m, int MAX_ITER, double C, double
 		}
 	}
 
-	double primal_obj;
-	primal_obj = current_obj_val(ex, m, sm, sparm, C, prev_valid_examples);
+	//double primal_obj;
+	//primal_obj = current_obj_val(ex, m, sm, sparm, C, prev_valid_examples);
 	
 	free(prev_valid_examples);
 	free(best_w);
 
-	return(primal_obj);
+	return(relaxed_primal_obj);
 }
 
 
@@ -867,7 +879,8 @@ int main(int argc, char* argv[]) {
 		//primal_obj = cutting_plane_algorithm(w, m, MAX_ITER, C, epsilon, ex, &sm, &sparm, valid_examples);
 		// solve biconvex self-paced learning problem
     	
-		primal_obj = negative_mine_loop(w, m, MAX_ITER, C, epsilon, ex, &sm, &sparm, valid_examples, spl_weight);
+		//primal_obj = negative_mine_loop(w, m, MAX_ITER, C, epsilon, ex, &sm, &sparm, valid_examples, spl_weight);
+    	primal_obj = alternate_convex_search(w, m, MAX_ITER, C, epsilon, ex, &sm, &sparm, valid_examples, spl_weight);
 		int nValid = 0;
 		for (i=0;i<m;i++) {
 			if(valid_examples[i]) {
@@ -967,6 +980,13 @@ void my_read_input_parameters(int argc, char *argv[], char *trainfile, char* mod
 	*spl_factor = 1.3;
 
   struct_parm->custom_argc=0;
+
+  struct_parm->min_area_ratios[0] = 70; 
+  struct_parm->min_area_ratios[1] = 70; 
+  struct_parm->min_area_ratios[2] = 65; 
+  struct_parm->min_area_ratios[3] = 60; 
+  struct_parm->min_area_ratios[4] = 55; 
+  struct_parm->min_area_ratios[5] = 50;
 
   for(i=1;(i<argc) && ((argv[i])[0] == '-');i++) {
     switch ((argv[i])[1]) {

@@ -701,13 +701,22 @@ void infer_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL *sm, 
             free_svector(h->phi_h_is[i]);
             fvecs = readFeatures(x.x_is[i].file_name, x.x_is[i].n_candidates);
             for(j = 0; j < x.x_is[i].n_candidates; j++){
-                if(x.x_is[i].areaRatios[j] > (70-10*outer_iter)){
+                if(outer_iter < 6){
+                    if(x.x_is[i].areaRatios[j] > sparm->min_area_ratios[outer_iter]){
+                        curr_score = sprod_ns(sm->w, fvecs[j]);      
+                        if(curr_score > maxScore){
+                            maxScore = curr_score;
+                            h->h_is[i] = j;
+                        }   
+                    }      
+                }
+                else{
                     curr_score = sprod_ns(sm->w, fvecs[j]);      
                     if(curr_score > maxScore){
                         maxScore = curr_score;
                         h->h_is[i] = j;
-                    }   
-                }                
+                    }  
+                }                          
             }
             h->phi_h_is[i] = copy_svector(fvecs[h->h_is[i]]);
             for(j =0; j < x.x_is[i].n_candidates; j++){
