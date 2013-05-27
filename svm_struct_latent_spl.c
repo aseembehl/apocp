@@ -322,7 +322,7 @@ double cutting_plane_algorithm(double *w, long m, int MAX_ITER, double C, double
   	mine_negative_latent_variables(ex[0].x, &ex[0].h, sm);
 	new_constraint = find_cutting_plane(ex, &margin, m, sm, sparm, valid_examples);
  	value = margin - sprod_ns(w, new_constraint);
-	while((value>threshold+epsilon)&&(iter<MAX_ITER)) {
+	while((iter<MAX_ITER)) {
 		if(value <= (threshold+epsilon)){
 			mine_negative_latent_variables(ex[0].x, &ex[0].h, sm);
 			new_constraint = find_cutting_plane(ex, &margin, m, sm, sparm, valid_examples);
