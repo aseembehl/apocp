@@ -860,7 +860,14 @@ int main(int argc, char* argv[]) {
      
   /* outer loop: latent variable imputation */
   //aseem outer_iter = 0;
-  last_primal_obj = DBL_MAX;
+	if (sparm.isInitByBinSVM){
+		update_valid_examples(w, m, C, ex, &sm, &sparm, valid_examples, init_spl_weight);
+		last_primal_obj = current_obj_val(ex, m, &sm, &sparm, C, valid_examples);
+	}
+	else{
+		last_primal_obj = DBL_MAX;
+	}
+  
   decrement = 0;
 
   /* errors for validation set */
