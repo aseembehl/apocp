@@ -862,6 +862,7 @@ int main(int argc, char* argv[]) {
   //aseem outer_iter = 0;
 	if (sparm.isInitByBinSVM){
 		update_valid_examples(w, m, C, ex, &sm, &sparm, valid_examples, init_spl_weight);
+		mine_negative_latent_variables(ex[0].x, &ex[0].h, &sm);
 		last_primal_obj = current_obj_val(ex, m, &sm, &sparm, C, valid_examples);
 	}
 	else{
