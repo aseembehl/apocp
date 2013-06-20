@@ -815,10 +815,12 @@ int main(int argc, char* argv[]) {
 
   // added by aseem. impute latent variable using updated weight vector
   outer_iter = 0;
+  int latent_update = 0;
   if (sparm.isInitByBinSVM){
     //infer_latent_variables(ex[0].x, ex[0].y, &ex[0].h, &sm, &sparm);
     infer_latent_variables(ex[0].x, ex[0].y, &ex[0].h, &sm, &sparm, sparm.initIter);
     outer_iter = 1 + sparm.initIter;
+    latent_update = 1 + sparm.initIter;
   }
   
   // added by aseem 
@@ -878,7 +880,6 @@ int main(int argc, char* argv[]) {
 
 
 	/* initializations */
-	int latent_update = 0;
 	spl_weight = init_spl_weight;
   while ((outer_iter<2)||((!stop_crit)&&(outer_iter<MAX_OUTER_ITER))) { 
     printf("OUTER ITER %d\n", outer_iter); fflush(stdout);
