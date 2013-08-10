@@ -759,11 +759,13 @@ void infer_test_latent_variables(PATTERN x, LABEL y, LATENT_VAR *h, STRUCTMODEL 
         fvecs = readFeatures(x.x_is[i].file_name, x.x_is[i].n_candidates);
         for(j = 0; j < x.x_is[i].n_candidates; j++){
             //if(s.x_is[i].isConsider){
-            curr_score = sprod_ns(sm->w, fvecs[j]);      
-            if(curr_score > maxScore){
-                maxScore = curr_score;
-                h->h_is[i] = j;
-            }   
+            curr_score = sprod_ns(sm->w, fvecs[j]);
+            if(curr_score != 0){
+            	if(curr_score > maxScore){
+	                maxScore = curr_score;
+	                h->h_is[i] = j;
+	            }   
+            }              
             //}                
         }
         h->phi_h_is[i] = copy_svector(fvecs[h->h_is[i]]);
